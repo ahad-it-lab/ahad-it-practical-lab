@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AHAD UEFI BIOS Simulator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#050d18;color:#dceafa;font-family:Arial,sans-serif;font-size:14px}
+button,select,input{font:inherit}
+button{cursor:pointer}
+.top{background:#142b43;border:1px solid #54718c;padding:15px}
+.brand{font-size:21px;font-weight:bold;color:#79d9ff}
+.sub{color:#a9c6df;margin-top:6px}
+.clock{font-size:25px;letter-spacing:2px;margin-top:15px}
+.date{color:#9bb7d0;margin-top:6px}
+.modebar{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:#142b43;border:1px solid #45647f}
+.btn{background:#1d405f;color:white;border:1px solid #6088a9;padding:11px 14px;border-radius:4px}
+.btn.active,.btn.primary{background:#087eaf;border-color:#51d5ff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.wrap{max-width:1000px;margin:auto;padding:10px}
+.panel{border:1px solid #46627e;background:#10243a;margin:12px 0}
+.heading{padding:17px;background:#193b5a;border-bottom:2px solid #3986ac}
+.heading h2{font-size:20px;color:#7bd8ff;margin:0}
+.content{padding:14px}
+.card{border:1px solid #3b5874;padding:13px;margin:10px 0;background:#102033}
+.card h3{color:#77d5ff;margin:0 0 12px}
+.line{display:flex;justify-content:space-between;gap:10px;padding:12px 2px;border-bottom:1px solid #2e4963}
+.line strong{color:#fff;text-align:right}
+.meter{height:13px;background:#29445c;margin:12px 0}
+.meter div{height:100%;background:#20b9eb;width:35%}
+.green{color:#65e6b0}
+.tabs{display:flex;overflow-x:auto;background:#142f49;border-bottom:2px solid #4e91b7}
+.tabs button{white-space:nowrap;border:0;border-right:1px solid #42617e;padding:15px;background:transparent;color:#dceafa}
+.tabs button.active{background:#087eaf}
+.setting{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#142e48;padding:15px;margin:7px 0;border:1px solid #233f5b}
+.setting select,.setting input[type=text],.setting input[type=password]{width:48%;background:#071522;color:white;border:1px solid #5984a5;padding:9px}
+.setting input[type=checkbox]{width:20px;height:20px}
+.hidden{display:none!important}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.help{color:#a7c2d9;line-height:1.9}
+.bootitem{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#17334f;margin:8px 0;border:1px solid #496d8c}
+.bootitem button{padding:9px 13px}
+.wizard{max-width:760px;margin:20px auto;background:#fff;color:#222;min-height:500px;padding:25px;border-radius:3px}
+.wizard h1{font-size:25px;font-weight:400;color:#12669a}
+.wizard p{line-height:1.6}
+.wizard select,.wizard input[type=text],.wizard input[type=password]{padding:11px;border:1px solid #888;background:white;color:#222;width:100%;margin:8px 0}
+.wizard button{background:#087db5;color:white;border:0;padding:11px 20px;margin:5px}
+.wizard button.secondary{background:#666}
+.wizard label{display:block;margin:12px 0}
+.wizard .bottom{display:flex;justify-content:space-between;flex-wrap:wrap;margin-top:25px}
+.wizard .disk{border:1px solid #888;padding:12px;margin:8px 0;cursor:pointer}
+.wizard .disk.selected{border:2px solid #087db5;background:#e4f5ff}
+.wizard .progress{height:17px;background:#ddd;margin:18px 0}
+.wizard .progress div{height:100%;background:#1688c2;width:0;transition:width .5s}
+.small{font-size:12px;color:#9cb4c9}
+footer{text-align:center;color:#829bb3;padding:20px}
+@media(min-width:700px){.wrap{padding:20px}.content{padding:22px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="top">
+ <div class="brand">AHAD UEFI BIOS</div>
+ <div class="sub">APTIO STYLE BIOS UTILITY | PRACTICAL SIMULATOR</div>
+ <div class="clock" id="clock">00:00:00</div>
+ <div class="date" id="date"></div>
+</header>
+
+<div class="modebar">
+ <button class="btn active" onclick="mode('ez',this)">EZ MODE</button>
+ <button class="btn" onclick="mode('advanced',this)">ADVANCED MODE (F7)</button>
+ <button class="btn" onclick="bootMenu()">BOOT MENU (F8)</button>
+ <button class="btn" onclick="mode('windows',null)">WINDOWS SETUP</button>
+</div>
+
+<div id="ez" class="panel">
+ <div class="heading"><h2>EZ MODE - SYSTEM OVERVIEW</h2><p>AHAD UEFI SYSTEM</p></div>
+ <div class="content">
+  <div class="card">
+   <h3>INFORMATION</h3>
+   <div class="line">Processor <strong>Intel / AMD Demo</strong></div>
+   <div class="line">CPU Speed <strong>3.20 GHz</strong></div>
+   <div class="line">Memory <strong>8192 MB</strong></div>
+   <div class="line">BIOS Version <strong>2.20 Demo</strong></div>
+   <div class="line">Boot Mode <strong>UEFI</strong></div>
+  </div>
+  <div class="card">
+   <h3>HARDWARE MONITOR</h3>
+   <p>CPU TEMPERATURE</p>
+   <h1 style="color:#6bd5ff">35°C</h1>
+   <div class="meter"><div></div></div>
+   <div class="line">Motherboard <strong>32°C</strong></div>
+   <div class="line">CPU Voltage <strong>1.012 V</strong></div>
+   <div class="line">CPU Fan <strong>1200 RPM</strong></div>
+  </div>
+  <div class="card">
+   <h3>DRAM STATUS</h3>
+   <div class="line">DIMM A1 <strong>4096 MB</strong></div>
+   <div class="line">DIMM B1 <strong>4096 MB</strong></div>
+   <div class="line">Total RAM <strong>8 GB</strong></div>
+   <div class="line">XMP <strong id="xmpEZ">Disabled</strong></div>
+  </div>
+  <div class="card">
+   <h3>STORAGE INFORMATION</h3>
+   <div class="line">Disk 0 <strong>NVMe SSD</strong></div>
+   <div class="line">Capacity <strong>512 GB</strong></div>
+   <div class="line">Disk 1 <strong>SATA SSD</strong></div>
+   <div class="line">USB <strong>Available (Demo)</strong></div>
+  </div>
+  <div class="card">
+   <h3>BOOT PRIORITY</h3>
+   <div id="ezBoot"></div>
+   <p class="small">Use arrows to reorder boot devices in Advanced Mode.</p>
+  </div>
+  <div class="card">
+   <h3>SECURITY STATUS</h3>
+   <div class="line">Secure Boot <strong id="secureEZ">Enabled</strong></div>
+   <div class="line">TPM <strong id="tpmEZ">Enabled</strong></div>
+   <button class="btn" onclick="toggleSetting('secure')">Toggle Secure Boot</button>
+  </div>
+  <div class="card">
+   <h3>PERFORMANCE PROFILE</h3>
+   <select id="profile" onchange="profileChange()" style="width:100%;padding:12px;background:#10243a;color:white">
+    <option>Normal</option><option>Performance</option><option>Power Saving</option>
+   </select>
+   <p class="green" id="profileText">Current: Normal</p>
+  </div>
+ </div>
+</div>
+
+<div id="advanced" class="panel hidden">
+ <div class="heading">
+  <h2>UEFI BIOS UTILITY - ADVANCED MODE</h2>
+  <p>APTIO STYLE SIMULATION</p>
+ </div>
+ <div class="tabs" id="advancedTabs">
+  <button class="active" onclick="advTab('main',this)">Main</button>
+  <button onclick="advTab('adv',this)">Advanced</button>
+  <button onclick="advTab('security',this)">Security</button>
+  <button onclick="advTab('boot',this)">Boot</button>
+  <button onclick="advTab('save',this)">Save & Exit</button>
+ </div>
+ <div class="content">
+  <section id="main">
+   <h3>Main - System Information</h3>
+   <div class="setting">BIOS Vendor <strong>Generic UEFI Firmware</strong></div>
+   <div class="setting">BIOS Version <strong>2.20 Demo</strong></div>
+   <div class="setting">Processor <strong>Intel / AMD Demo</strong></div>
+   <div class="setting">CPU Speed <strong>3.20 GHz</strong></div>
+   <div class="setting">Total Memory <strong>8192 MB</strong></div>
+   <div class="setting">System Date <input id="sysdate" type="text"></div>
+   <div class="setting">System Time <input id="systime" type="text"></div>
+  </section>
+  <section id="adv" class="hidden">
+   <h3>Advanced Configuration</h3>
+   <div class="setting">Intel Virtualization <input id="virtual" type="checkbox" checked></div>
+   <div class="setting">XMP Profile <select id="xmp"><option>Disabled</option><option>Profile 1</option><option>Profile 2</option></select></div>
+   <div class="setting">SATA Mode <select><option>AHCI</option><option>RAID</option></select></div>
+   <div class="setting">USB Controller <select><option>Enabled</option><option>Disabled</option></select></div>
+   <div class="setting">CPU Fan Mode <select><option>Standard</option><option>Silent</option><option>Turbo</option></select></div>
+   <div class="setting">Onboard Audio <input type="checkbox" checked></div>
+   <div class="setting">Integrated Graphics <input type="checkbox" checked></div>
+  </section>
+  <section id="security" class="hidden">
+   <h3>Security Configuration</h3>
+   <div class="setting">Secure Boot <input id="secure" type="checkbox" checked onchange="sync()"></div>
+   <div class="setting">TPM 2.0 <input id="tpm" type="checkbox" checked onchange="sync()"></div>
+   <div class="setting">Administrator Password <button class="btn" onclick="passwordPrompt()">Set Password</button></div>
+   <p class="help">Secure Boot helps protect the boot process. TPM provides hardware-based security support.</p>
+  </section>
+  <section id="boot" class="hidden">
+   <h3>Boot Configuration</h3>
+   <div id="bootList"></div>
+   <p class="help">Use ↑ and ↓ to change device priority.</p>
+   <div class="setting">Boot Mode <select><option>UEFI</option><option>Legacy</option></select></div>
+   <div class="setting">Fast Boot <input type="checkbox"></div>
+  </section>
+  <section id="save" class="hidden">
+   <h3>Save & Exit</h3>
+   <p>Save your changed settings before leaving the BIOS simulator.</p>
+   <div class="actions">
+    <button class="btn primary" onclick="saveSettings()">Save Changes & Exit (F10)</button>
+    <button class="btn" onclick="discardSettings()">Discard Changes</button>
+    <button class="btn" onclick="mode('ez',null)">Back to EZ Mode</button>
+   </div>
+   <p id="saveMessage" class="green"></p>
+  </section>
+ </div>
+ <div class="content help">
+  KEYBOARD GUIDE<br>
+  ↑ ↓ Select Item | ENTER Select | ESC Back<br>
+  F7 EZ / Advanced Mode | F8 Boot Menu | F10 Save & Exit
+ </div>
+</div>
+
+<div id="bootmenu" class="panel hidden">
+ <div class="heading"><h2>BOOT DEVICE SELECT</h2></div>
+ <div class="content">
+  <p>Select a boot device:</p>
+  <div id="bootChoices"></div>
+  <button class="btn" onclick="mode('ez',null)">Cancel / ESC</button>
+ </div>
+</div>
+
+<div id="windows" class="hidden">
+ <div class="wizard">
+  <div style="color:#12669a;font-size:13px">WINDOWS SETUP | AHAD PRACTICAL LAB</div>
+  <div id="w1">
+   <h1>Windows Setup</h1>
+   <p>Select your language, time and keyboard preferences.</p>
+   <label>Language to install<select id="lang"><option>English (United States)</option><option>বাংলা (Bangladesh)</option></select></label>
+   <label>Time and currency format<select><option>English (United States)</option><option>Bangla (Bangladesh)</option></select></label>
+   <label>Keyboard or input method<select><option>US</option><option>Bangla</option></select></label>
+   <div class="bottom"><span></span><button onclick="go(2)">Next</button></div>
+  </div>
+
+  <div id="w2" class="hidden">
+   <h1>Windows Setup</h1>
+   <p>Ready to install Windows.</p>
+   <p>Click Install now to continue the practice installation.</p>
+   <button onclick="go(3)">Install now</button>
+   <div class="bottom"><button class="secondary" onclick="go(1)">Back</button></div>
+  </div>
+
+  <div id="w3" class="hidden">
+   <h1>Activate Windows</h1>
+   <p>Enter your product key or choose to continue without one.</p>
+   <input type="text" id="productkey" placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX">
+   <p class="small">Practice only. A real Windows license key is not supplied.</p>
+   <div class="bottom">
+    <button class="secondary" onclick="go(2)">Back</button>
+    <button onclick="go(4)">I don't have a product key</button>
+    <button onclick="go(4)">Next</button>
+   </div>
+  </div>
+
+  <div id="w4" class="hidden">
+   <h1>Select operating system</h1>
+   <p>Choose the edition you want to install.</p>
+   <label><input type="radio" name="edition" value="Windows 11 Home"> Windows 11 Home</label>
+   <label><input type="radio" name="edition" value="Windows 11 Pro" checked> Windows 11 Pro</label>
+   <label><input type="radio" name="edition" value="Windows 10 Pro"> Windows 10 Pro</label>
+   <div class="bottom"><button class="secondary" onclick="go(3)">Back</button><button onclick="go(5)">Next</button></div>
+  </div>
+
+  <div id="w5" class="hidden">
+   <h1>Applicable notices and license terms</h1>
+   <p>Please read and accept the license terms to continue.</p>
+   <label><input type="checkbox" id="license"> I accept the license terms.</label>
+   <div class="bottom"><button class="secondary" onclick="go(4)">Back</button><button onclick="licenseNext()">Next</button></div>
+  </div>
+
+  <div id="w6" class="hidden">
+   <h1>Which type of installation do you want?</h1>
+   <div class="disk" onclick="installType('upgrade')"><b>Upgrade: Install Windows and keep files</b><p>Practice upgrade path.</p></div>
+   <div class="disk" onclick="installType('custom')"><b>Custom: Install Windows only</b><p>Practice clean installation.</p></div>
+   <div class="bottom"><button class="secondary" onclick="go(5)">Back</button></div>
+  </div>
+
+  <div id="w7" class="hidden">
+   <h1>Where do you want to install Windows?</h1>
+   <p>Select a partition. This is a simulated disk, not your phone storage.</p>
+   <div class="disk selected" onclick="selectDisk(this)">Drive 0 Partition 1: System Reserved <b>100 MB</b></div>
+   <div class="disk" onclick="selectDisk(this)">Drive 0 Partition 2: Primary <b>200 GB</b></div>
+   <div class="disk" onclick="selectDisk(this)">Drive 0 Partition 3: Data <b>312 GB</b></div>
+   <p class="small">Formatting and deleting are simulated only.</p>
+   <div class="actions">
+    <button class="secondary" onclick="go(6)">Back</button>
+    <button class="secondary" onclick="diskAction('Format')">Format</button>
+    <button class="secondary" onclick="diskAction('Delete')">Delete</button>
+    <button onclick="go(8)">Next</button>
+   </div>
+  </div>
+
+  <div id="w8" class="hidden">
+   <h1>Ready to install</h1>
+   <p id="summary"></p>
+   <p>Windows will now be installed in this practice simulation.</p>
+   <div class="bottom"><button class="secondary" onclick="go(7)">Back</button><button onclick="startInstall()">Install</button></div>
+  </div>
+
+  <div id="w9" class="hidden">
+   <h1>Installing Windows</h1>
+   <p id="stage">Copying Windows files...</p>
+   <div class="progress"><div id="progressbar"></div></div>
+   <p id="pct">0%</p>
+   <p>Please wait while the installation simulation continues.</p>
+  </div>
+
+  <div id="w10" class="hidden">
+   <h1>Windows needs to restart</h1>
+   <p>Installation files and features have been completed.</p>
+   <button onclick="go(11)">Restart now</button>
+  </div>
+
+  <div id="w11" class="hidden">
+   <h1>Getting devices ready</h1>
+   <p id="restartText">Preparing your device...</p>
+   <div class="progress"><div id="restartbar"></div></div>
+   <p id="restartpct">0%</p>
+  </div>
+
+  <div id="w12" class="hidden">
+   <h1>Let's set things up</h1>
+   <p>Choose your country or region.</p>
+   <select id="country"><option>Bangladesh</option><option>United States</option><option>India</option></select>
+   <div class="bottom"><button onclick="go(13)">Yes</button></div>
+  </div>
+
+  <div id="w13" class="hidden">
+   <h1>Is this the right keyboard layout?</h1>
+   <select><option>US</option><option>Bangla</option></select>
+   <div class="bottom"><button onclick="go(14)">Yes</button></div>
+  </div>
+
+  <div id="w14" class="hidden">
+   <h1>Who is going to use this device?</h1>
+   <input type="text" id="username" placeholder="Enter your name">
+   <div class="bottom"><button onclick="userNext()">Next</button></div>
+  </div>
+
+  <div id="w15" class="hidden">
+   <h1>Create a password</h1>
+   <input type="password" id="userpass" placeholder="Create a practice password">
+   <p class="small">You can leave this blank for the simulation.</p>
+   <div class="bottom"><button onclick="go(16)">Next</button></div>
+  </div>
+
+  <div id="w16" class="hidden">
+   <h1>You're all set!</h1>
+   <p id="welcome"></p>
+   <h2 style="color:#1688c2">Welcome to Windows!</h2>
+   <button onclick="finish()">Finish Setup</button>
+  </div>
+
+  <div id="w17" class="hidden">
+   <h1>Windows Desktop</h1>
+   <p>Congratulations! Your Windows installation practice is complete.</p>
+   <div style="background:#173b62;color:white;padding:35px;text-align:center;border-radius:5px">
+    <h2>Windows 11</h2>
+    <p>AHAD IT PRACTICAL LAB</p>
+    <p>Desktop Simulation</p>
+   </div>
+   <button onclick="location.reload()">Restart Practice</button>
+  </div>
+  <div class="small" style="margin-top:25px">AHAD UEFI BIOS & WINDOWS INSTALLATION PRACTICE</div>
+ </div>
+</div>
+
+<footer>Educational simulator only. It does not access real BIOS, alter real disks, or install Windows on your device.</footer>
+</div>
+
+<script>
+let devices=['Windows Boot Manager','UEFI USB Storage Device','NVMe SSD','SATA SSD'];
+let selectedDisk=0, installMode='custom', progressTimer=null;
+
+function mode(id,btn){
+ document.querySelectorAll('#ez,#advanced,#windows,#bootmenu').forEach(x=>x.classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+ document.querySelectorAll('.modebar .btn').forEach(x=>x.classList.remove('active'));
+ if(btn)btn.classList.add('active');
+}
+function advTab(id,btn){
+ ['main','adv','security','boot','save'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+ document.querySelectorAll('#advancedTabs button').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');
+}
+function renderBoot(){
+ let html='';
+ devices.forEach((d,i)=>{
+ html+=`<div class="bootitem"><span>${i+1}. ${d}</span><span><button class="btn" onclick="moveDevice(${i},-1)">↑</button> <button class="btn" onclick="moveDevice(${i},1)">↓</button></span></div>`;
+ });
+ document.getElementById('bootList').innerHTML=html;
+ document.getElementById('ezBoot').innerHTML=devices.slice(0,3).map((d,i)=>`<div class="line">${i+1}. ${d}</div>`).join('');
+}
+function moveDevice(i,dir){
+ let j=i+dir;
+ if(j<0||j>=devices.length)return;
+ [devices[i],devices[j]]=[devices[j],devices[i]];
+ renderBoot();
+}
+function bootMenu(){
+ mode('bootmenu',null);
+ document.getElementById('bootChoices').innerHTML=devices.map((d,i)=>`<div class="bootitem"><span>${i+1}. ${d}</span><button class="btn primary" onclick="chooseBoot(${i})">Select</button></div>`).join('');
+}
+function chooseBoot(i){
+ alert('Selected boot device: '+devices[i]+'\nThis is a practice simulation.');
+ mode('ez',null);
+}
+function toggleSetting(id){
+ let el=document.getElementById(id);
+ el.checked=!el.checked;sync();
+}
+function sync(){
+ document.getElementById('secureEZ').textContent=document.getElementById('secure').checked?'Enabled':'Disabled';
+ document.getElementById('tpmEZ').textContent=document.getElementById('tpm').checked?'Enabled':'Disabled';
+}
+function profileChange(){
+ document.getElementById('profileText').textContent='Current: '+document.getElementById('profile').value;
+}
+function saveSettings(){
+ sync();
+ document.getElementById('xmpEZ').textContent=document.getElementById('xmp').value;
+ document.getElementById('saveMessage').textContent='Settings saved successfully in this simulation.';
+ alert('BIOS settings saved!');
+ mode('ez',null);
+}
+function discardSettings(){
+ if(confirm('Discard your changes?')){
+ document.getElementById('secure').checked=true;
+ document.getElementById('tpm').checked=true;
+ document.getElementById('virtual').checked=true;
+ document.getElementById('xmp').value='Disabled';
+ sync();renderBoot();
+ alert('Default settings restored.');
+ }
+}
+function passwordPrompt(){
+ let p=prompt('Enter a practice administrator password:');
+ if(p)alert('Practice password set. It is not a real BIOS password.');
+}
+function go(n){
+ for(let i=1;i<=17;i++)document.getElementById('w'+i).classList.add('hidden');
+ document.getElementById('w'+n).classList.remove('hidden');
+}
+function licenseNext(){
+ if(!document.getElementById('license').checked){alert('Please accept the license terms to continue.');return;}
+ go(6);
+}
+function installType(type){
+ installMode=type;
+ if(type==='upgrade'){
+ alert('Upgrade path selected. In this demo, continue to the simulated disk screen.');
+ }
+ go(7);
+}
+function selectDisk(el){
+ document.querySelectorAll('#w7 .disk').forEach(x=>x.classList.remove('selected'));
+ el.classList.add('selected');
+ selectedDisk=[...document.querySelectorAll('#w7 .disk')].indexOf(el);
+}
+function diskAction(action){
+ let names=['System Reserved','Primary','Data'];
+ alert(action+' selected for '+names[selectedDisk]+'.\nThis action is simulated only. No real data will be changed.');
+}
+function startInstall(){
+ let edition=document.querySelector('input[name="edition"]:checked');
+ document.getElementById('summary').textContent='Edition: '+(edition?edition.value:'Windows 11 Pro')+' | Installation: '+installMode.toUpperCase();
+ go(9);
+ let n=0;
+ let stages=['Copying Windows files...','Getting files ready for installation...','Installing features...','Installing updates...','Finishing up...'];
+ progressTimer=setInterval(()=>{
+ n++;
+ document.getElementById('progressbar').style.width=n+'%';
+ document.getElementById('pct').textContent=n+'%';
+ document.getElementById('stage').textContent=stages[Math.min(4,Math.floor(n/20))];
+ if(n>=100){clearInterval(progressTimer);go(10);}
+ },150);
+}
+function userNext(){
+ let name=document.getElementById('username').value.trim();
+ if(!name){alert('Please enter a name.');return;}
+ document.getElementById('welcome').textContent='Welcome, '+name+'!';
+ go(15);
+}
+function finish(){go(17)}
+function updateClock(){
+ let now=new Date();
+ document.getElementById('clock').textContent=now.toLocaleTimeString();
+ document.getElementById('date').textContent=now.toLocaleDateString();
+}
+setInterval(updateClock,1000);updateClock();
+document.getElementById('sysdate').value=new Date().toLocaleDateString();
+document.getElementById('systime').value=new Date().toLocaleTimeString();
+renderBoot();
+
+document.addEventListener('keydown',e=>{
+ if(e.key==='F7'){e.preventDefault();let a=document.getElementById('advanced').classList.contains('hidden');mode(a?'advanced':'ez',null);}
+ if(e.key==='F8'){e.preventDefault();bootMenu();}
+ if(e.key==='F10'){e.preventDefault();saveSettings();}
+ if(e.key==='Escape'){
+  if(!document.getElementById('windows').classList.contains('hidden'))return;
+  mode('ez',null);
+ }
+});
+</script>
+</body>
+</html>
